@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>インタラクティブな雨ニモマケズ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
@@ -13,16 +13,81 @@
             padding: 0;
             overflow: hidden;
             background-color: #FAFAFA;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         canvas {
             display: block;
+        }
+
+        #text-controls {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            z-index: 1000;
+            font-family: 'sans-serif';
+            font-size: 12px;
+        }
+
+        .button-background {
+            background-color: rgba(0, 0, 0, 0.08);
+            padding: 3px 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.2;
+        }
+
+        .button-background:hover,
+        .button-background:active {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .button-background .char {
+            color: #ffff4f;
+            transition: color 0.2s;
+            display: inline-block;
+        }
+
+        #toggleModeTextBtnBackground {
+            justify-content: space-around;
+        }
+
+        #clearCanvasTextBtnBackground {
+            justify-content: space-between;
+        }
+
+        #toggleModeTextBtnBackground,
+        #clearCanvasTextBtnBackground {
+            width: 65px;
         }
     </style>
 </head>
 
 <body>
     <script src="/poetic-trajectory/sketch.js"></script>
+
+    <div id="text-controls">
+        <div id="toggleModeTextBtnBackground" class="button-background" title="切换模式 (SHIFT)">
+            <span class="char">モ</span><span class="char">ー</span><span class="char">ド</span><span
+                class="char">切</span><span class="char">替</span>
+        </div>
+        <div id="clearCanvasTextBtnBackground" class="button-background" title="清除画布 (C)">
+            <span class="char">ク</span><span class="char">リ</span><span class="char">ア</span>
+        </div>
+    </div>
 </body>
 
 </html>
