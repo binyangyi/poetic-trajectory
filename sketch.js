@@ -391,7 +391,7 @@ function displayInitialMessage() {
   let controlsHintText = "右下の文字ボタン、またはSHIFT/Cキーで操作。";
   text(controlsHintText, width / 2, height / 2);
 
-  text("文字の密度の变化に合わせ、詩を感じてください。", width / 2, height / 2 + 30);
+  text("文字間の疎密の変化を通して、詩のリズムを感じてみてください。", width / 2, height / 2 + 30);
 
   textSize(textFontSize);
   pop();
