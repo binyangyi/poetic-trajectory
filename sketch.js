@@ -379,7 +379,7 @@ function displayInitialMessage() {
   textAlign(CENTER, CENTER);
   textFont('sans-serif');
   textSize(14);
-  let upwardOffset = 60;  // 整体向上移动的距离
+  let upwardOffset = 80;  // 整体向上移动的距离
   let lineSpacing = 30;   // 行间距(三行文字提示)
 
 
