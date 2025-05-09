@@ -48,31 +48,29 @@ let isDrawing = false;
 let distSinceLastChar = 0;
 let lastMousePos = { x: 0, y: 0 };
 
-// 文字与路径可调整参数
-let minSpeed = 0.5; // 影响文字间距的最小鼠标速度阈值
-let maxSpeed = 20;  // 影响文字间距的最大鼠标速度阈值
-let minSpacingAlongPath = 3; // 路径上文字之间的最小间距（像素）
-let maxSpacingAlongPath = 40; // 路径上文字之间的最大间距（像素）
-let textFontSize = 12; // 主要诗歌文字的大小（像素）
-let textOffsetAboveLine = textFontSize * 0.8; // 文字相对于绘制路径向上偏移的距离
-let strokeLineWeight = 1.2; // 绘制路径的线条粗细
-let lineAlpha = 200; // 绘制路径线条的透明度 (0-255)
-let textAlpha = 255; // 诗歌文字的透明度 (0-255)
-let lineStrokeColor = 0; // 绘制路径线条的颜色 (0为黑色, 255为白色)
-let minScreenSpacing = textFontSize * 0.7; // 放置文字时，新文字与上一个文字在屏幕上的最小像素距离，防止重叠
-let pauseLengthOnPath = 60; // 诗句之间在路径上“停顿”的等效长度（以字符间距单位计）
+let minSpeed = 0.5; // 绘制文字时的最小速度影响
+let maxSpeed = 20; // 绘制文字时的最大速度影响
+let minSpacingAlongPath = 3; // 沿路径的最小字符间距
+let maxSpacingAlongPath = 40; // 沿路径的最大字符间距
+let textFontSize = 12; // 文本字体大小
+let textOffsetAboveLine = textFontSize * 0.8; // 文本在线条上方的偏移量
+let strokeLineWeight = 1.2; // 线条粗细
+let lineAlpha = 200; // 线条透明度
+let textAlpha = 255; // 文本透明度
+let lineStrokeColor = 0; // 线条颜色 (0为黑色)
+let minScreenSpacing = textFontSize * 0.7; // 字符在屏幕上的最小间距，防止重叠
+let pauseLengthOnPath = 60; // 诗句之间停顿的等效路径长度
 
 const PAUSE_MARKER = { isPause: true, length: pauseLengthOnPath };
 
-// 掉落文字粒子参数
 let activeFallingTextParticles = [];
 let poemCharsNormalForFalling = [];
 let fallingCharIndex = 0;
-const fallingTextSpawnChance = 0.25; // 每帧生成一个新的掉落文字粒子的几率 (0到1之间)
-const fallingTextMaxCount = 50; // 屏幕上允许存在的最大掉落文字粒子数量
-const fallingTextInitialLifespan = 120; // 掉落文字粒子的初始生命周期（帧数）
-const fallingTextGravity = 0.07; // 作用于掉落文字粒子的重力加速度
-const fallingTextFontSize = textFontSize + 2; // 掉落文字的字体大小（像素）
+const fallingTextSpawnChance = 0.25; // 掉落文字的生成几率
+const fallingTextMaxCount = 50; // 屏幕上最大掉落文字数量
+const fallingTextInitialLifespan = 120; // 掉落文字初始生命周期 (帧)
+const fallingTextGravity = 0.07; // 掉落文字的重力加速度
+const fallingTextFontSize = textFontSize + 2; // 掉落文字的字体大小
 
 let aktivGroteskFont;
 
@@ -90,6 +88,23 @@ function setup() {
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
   lastPlacedTextPos = null;
   activeFallingTextParticles = [];
+
+  const toggleBtnText = document.getElementById('toggleModeTextBtnBackground');
+  const clearBtnText = document.getElementById('clearCanvasTextBtnBackground');
+
+  if (toggleBtnText) {
+    toggleBtnText.addEventListener('click', (event) => {
+      toggleMode();
+      event.stopPropagation();
+    });
+  }
+
+  if (clearBtnText) {
+    clearBtnText.addEventListener('click', (event) => {
+      clearDrawingAndShowMessage();
+      event.stopPropagation();
+    });
+  }
 }
 
 function prepareFallingTextSource() {
@@ -106,14 +121,13 @@ function loadPoemData(sourceLines) {
   for (let lineIndex = 0; lineIndex < sourceLines.length; lineIndex++) {
     const currentLineText = sourceLines[lineIndex];
     for (let i = 0; i < currentLineText.length; i++) {
-      let char = currentLineText[i];
-      poemData.push({ char: char, isEmoji: false, emoji: null });
+      poemData.push({ char: currentLineText[i] });
     }
     if (lineIndex < sourceLines.length - 1) {
       poemData.push(PAUSE_MARKER);
     }
   }
-  if (poemData.length > 0 && (poemData.length === 0 || !poemData[poemData.length - 1].isPause)) {
+  if (poemData.length > 0 && (!poemData[poemData.length - 1].isPause)) {
     poemData.push(PAUSE_MARKER);
   }
   currentPoemIndex = 0;
@@ -273,7 +287,24 @@ function updateAndDrawFallingTextParticles() {
   }
 }
 
-function mousePressed() {
+function mousePressed(event) {
+  if (event && event.target) {
+    const clickedElement = event.target;
+    const clickedElementId = clickedElement.id;
+
+    if (clickedElementId === 'toggleModeTextBtnBackground' || clickedElementId === 'clearCanvasTextBtnBackground') {
+      return;
+    }
+
+    const parentOfClickedElement = clickedElement.parentElement;
+    if (parentOfClickedElement) {
+      const parentOfClickedElementId = parentOfClickedElement.id;
+      if (parentOfClickedElementId === 'toggleModeTextBtnBackground' || parentOfClickedElementId === 'clearCanvasTextBtnBackground') {
+        return;
+      }
+    }
+  }
+
   isDrawing = true;
   currentPath = [{ x: mouseX, y: mouseY }];
   currentDrawnText = [];
@@ -355,10 +386,12 @@ function displayInitialMessage() {
   } else {
     line1Text = "モード：「雨ニモマケズ」正順。クリック＆ドラッグで描画。";
   }
-
   text(line1Text, width / 2, height / 2 - 30);
-  text("SHIFTキーでモード切替。「C」キーでクリア。", width / 2, height / 2);
-  text("文字の密度の変化に合わせ、詩を感じてください。", width / 2, height / 2 + 30);
+
+  let controlsHintText = "右下の文字ボタン、またはSHIFT/Cキーで操作。";
+  text(controlsHintText, width / 2, height / 2);
+
+  text("文字の密度の变化に合わせ、詩を感じてください。", width / 2, height / 2 + 30);
 
   textSize(textFontSize);
   pop();
@@ -366,7 +399,6 @@ function displayInitialMessage() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  clearDrawingAndShowMessage();
   prepareFallingTextSource();
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
 }
