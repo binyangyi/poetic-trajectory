@@ -379,6 +379,9 @@ function displayInitialMessage() {
   textAlign(CENTER, CENTER);
   textFont('sans-serif');
   textSize(14);
+  let upwardOffset = 60;  // 整体向上移动的距离
+  let lineSpacing = 30;   // 行间距(三行文字提示)
+
 
   let line1Text;
   if (isShuffledMode) {
@@ -386,13 +389,10 @@ function displayInitialMessage() {
   } else {
     line1Text = "モード：「雨ニモマケズ」正順。クリック＆ドラッグで描画。";
   }
-  text(line1Text, width / 2, height / 2 - 30);
-
+  text(line1Text, width / 2, height / 2 - lineSpacing - upwardOffset);
   let controlsHintText = "右下の文字ボタン、またはSHIFT/Cキーで操作。";
-  text(controlsHintText, width / 2, height / 2);
-
-  text("文字間の疎密の変化を通して、詩のリズムを感じてください。", width / 2, height / 2 + 30);
-
+  text(controlsHintText, width / 2, height / 2 - upwardOffset);
+  text("文字間の疎密の変化を通して、詩のリズムを感じてください。", width / 2, height / 2 + lineSpacing - upwardOffset);
   textSize(textFontSize);
   pop();
 }
