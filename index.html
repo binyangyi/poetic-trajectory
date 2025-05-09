@@ -27,8 +27,8 @@
 
         #text-controls {
             position: fixed;
-            right: 20px;
-            bottom: 20px;
+            right: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -42,12 +42,12 @@
             background-color: rgba(0, 0, 0, 0.08);
             padding: 3px 6px;
             display: flex;
-            justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
             -webkit-tap-highlight-color: transparent;
             line-height: 1.2;
+            width: 65px;
         }
 
         .button-background:hover,
@@ -63,22 +63,86 @@
 
         #toggleModeTextBtnBackground {
             justify-content: space-around;
+            transform: rotate(-24deg) translate(-68px, 15px);
         }
 
         #clearCanvasTextBtnBackground {
             justify-content: space-between;
+            transform: rotate(-8deg) translate(-5px, 22px);
         }
 
-        #toggleModeTextBtnBackground,
-        #clearCanvasTextBtnBackground {
-            width: 65px;
+        #saveCanvasBtnBackground {
+            justify-content: space-around;
+            transform: rotate(-74deg) translate(61px, 1px);
+        }
+
+        #initial-message-container {
+            display: block;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            position: fixed;
+            font-family: 'sans-serif';
+            font-size: 14px;
+            color: rgb(150, 150, 150);
+            pointer-events: none;
+            z-index: 900;
+            left: 50%;
+            top: calc(50% - 60px);
+            transform: translate(-50%, -50%);
+            text-align: center;
+            line-height: 1.9;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        #initial-message-container.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        #initial-message-container p {
+            margin-top: 0;
+            margin-bottom: 0.2em;
+        }
+
+        /* 移动设备 */
+        @media (max-width: 599px) {
+
+
+            /* 切换到竖排布局的屏幕宽度断点 */
+            #initial-message-container {
+                display: flex;
+                flex-direction: row-reverse;
+                gap: 1em;
+                line-height: 1.5;
+                right: auto;
+                left: 65px;
+                top: 50%;
+                width: auto;
+                text-align: left;
+                transform: translateY(-62%);
+                max-width: none;
+            }
+
+            #initial-message-container p {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                white-space: nowrap;
+                margin: 0;
+                max-height: 80vh;
+            }
         }
     </style>
 </head>
 
 <body>
     <script src="/poetic-trajectory/sketch.js"></script>
-
+    <div id="initial-message-container">
+        <p id="message-line1"></p>
+        <p id="message-line2"></p>
+        <p id="message-line3"></p>
+    </div>
     <div id="text-controls">
         <div id="toggleModeTextBtnBackground" class="button-background">
             <span class="char">モ</span><span class="char">ー</span><span class="char">ド</span><span
@@ -86,6 +150,9 @@
         </div>
         <div id="clearCanvasTextBtnBackground" class="button-background">
             <span class="char">ク</span><span class="char">リ</span><span class="char">ア</span>
+        </div>
+        <div id="saveCanvasBtnBackground" class="button-background">
+            <span class="char">保</span><span class="char">存</span>
         </div>
     </div>
 </body>
