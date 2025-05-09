@@ -396,7 +396,7 @@ function displayInitialMessage() {
   if (windowWidth < 600) {  // 移动设备
     line2Text = "右下の文字ボタンで操作。";
   } else {
-    line2Text = "右下の文字ボタン、またはShift/C/Sキーで操作。";
+    line2Text = "右下の文字ボタン、またはSHIFT/C/Sキーで操作。";
   }
   line3Text = "文字間の疎密の変化を通して、詩のリズムを感じてみてください。";
   msgLine1Elem.textContent = line1Text;
