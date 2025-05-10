@@ -106,10 +106,6 @@ let penDownSoundEnv, penUpSoundEnv, charPlaceSoundEnv;
 let masterReverbEffect;
 let originalPenDownADSR, originalPenUpADSR;
 
-// --- Audio Unlock Helper Variables ---
-let audioUnlockButton; // 隐藏的HTML按钮，用于辅助解锁音频
-let audioContextSuccessfullyUnlocked = false; // 标记音频上下文是否已成功解锁
-
 // ------------------------------------------------------------------------------------
 // DOM Element Variables / DOM元素变量
 // ------------------------------------------------------------------------------------
@@ -134,48 +130,13 @@ function setup() {
   msgLine2Elem = document.getElementById('message-line2');
   msgLine3Elem = document.getElementById('message-line3');
 
-  // --- 创建一个隐藏的HTML按钮用于辅助解锁音频 ---
-  audioUnlockButton = document.createElement('button');
-  audioUnlockButton.id = 'audioUnlockHelper';
-  audioUnlockButton.style.position = 'absolute';
-  audioUnlockButton.style.left = '-9999px'; // 移出屏幕外
-  audioUnlockButton.style.top = '-9999px';  // 移出屏幕外
-  audioUnlockButton.style.opacity = '0';    // 完全透明
-  audioUnlockButton.style.width = '1px';    // 最小化尺寸
-  audioUnlockButton.style.height = '1px';   // 最小化尺寸
-  audioUnlockButton.setAttribute('aria-hidden', 'true'); // 辅助技术隐藏
-  audioUnlockButton.tabIndex = -1; // 不可被键盘聚焦
-  document.body.appendChild(audioUnlockButton);
-
-  audioUnlockButton.addEventListener('click', () => {
-    // 这个事件监听器会在 audioUnlockButton.click() 被调用时触发
-    if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
-      console.log('隐藏的音频解锁按钮被点击。调用 userStartAudio()。');
-      userStartAudio(); // p5.js 提供的函数，用于启动/恢复音频上下文
-      // 延迟检查状态，因为它可能不是立即改变的
-      setTimeout(() => {
-        if (getAudioContext().state === 'running') {
-          console.log('通过隐藏按钮点击，音频上下文现在是 RUNNING 状态。');
-          audioContextSuccessfullyUnlocked = true;
-        } else {
-          console.log('通过隐藏按钮点击后，音频上下文仍未 RUNNING。状态:', getAudioContext().state);
-        }
-      }, 100); // 100毫秒延迟
-    } else if (typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
-      console.log('隐藏按钮点击时，音频上下文已处于 RUNNING 状态。');
-      audioContextSuccessfullyUnlocked = true; // 标记为已解锁
-    }
-  });
-  // --- 隐藏按钮创建完毕 ---
-
   prepareFallingTextSource();
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
-  initializeSoundEngine(); // 初始化音效引擎（这会创建AudioContext，但可能处于suspended状态）
-  setupButtonListeners(); // 设置HTML按钮的监听器
+  initializeSoundEngine();
+  setupButtonListeners();
 
   lastPlacedTextPos = null;
   activeFallingTextParticles = [];
-  console.log("Setup 完成。初始音频上下文状态:", getAudioContext() ? getAudioContext().state : "不可用");
 }
 
 function draw() {
@@ -208,70 +169,25 @@ function windowResized() {
 }
 
 // ------------------------------------------------------------------------------------
-// Audio Unlock Logic / 音频解锁逻辑
-// ------------------------------------------------------------------------------------
-function tryUnlockAudio() {
-  if (audioContextSuccessfullyUnlocked || typeof getAudioContext !== 'function') {
-    // 如果已经解锁或音频功能不可用，则不执行任何操作
-    if(audioContextSuccessfullyUnlocked) console.log("tryUnlockAudio: 音频已解锁，跳过。");
-    return;
-  }
-
-  const audioState = getAudioContext().state;
-  console.log(`tryUnlockAudio 被调用。当前 AudioContext 状态: ${audioState}`);
-
-  if (audioState !== 'running') {
-    // 首先，直接尝试 p5 的 userStartAudio()。
-    // 对于某些平台或如果手势已经被认为是“强”手势，这可能就足够了。
-    console.log("tryUnlockAudio: 尝试直接调用 userStartAudio()");
-    userStartAudio();
-
-    // 短暂延迟后检查状态。某些交互可能会使其立即运行。
-    setTimeout(() => {
-      if (getAudioContext().state === 'running') {
-        console.log('tryUnlockAudio: 直接调用 userStartAudio() 后，音频上下文变为 RUNNING。');
-        audioContextSuccessfullyUnlocked = true;
-      } else {
-        // 如果直接调用无效，则以编程方式点击我们的隐藏按钮。
-        // 希望调用 tryUnlockAudio 的手势（例如 mousePressed）
-        // 能够使这个程序化的点击对 iOS 合法化。
-        console.log('tryUnlockAudio: 直接调用 userStartAudio() 未能运行上下文。触发隐藏按钮点击。当前状态:', getAudioContext().state);
-        if (audioUnlockButton) {
-          audioUnlockButton.click(); // 这会触发按钮自身的事件监听器
-        }
-      }
-    }, 50); // 50毫秒延迟，给直接调用一个机会
-  } else {
-    console.log("tryUnlockAudio: 音频上下文已处于 RUNNING 状态。");
-    audioContextSuccessfullyUnlocked = true; // 标记为已解锁
-  }
-}
-
-
-// ------------------------------------------------------------------------------------
 // Event Handlers / 事件处理函数
 // ------------------------------------------------------------------------------------
 
 function mousePressed(event) {
-  tryUnlockAudio(); // 在画布交互时尝试解锁音频上下文
-
-  // 检查点击的是否是UI按钮
   if (event && event.target) {
     const clickedElement = event.target;
     const clickedElementId = clickedElement.id;
     const parentOfClickedElement = clickedElement.parentElement;
     const parentOfClickedElementId = parentOfClickedElement ? parentOfClickedElement.id : null;
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
-    
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
-      console.log("mousePressed: 点击在HTML按钮上，从绘制逻辑返回。");
-      // HTML按钮的音频解锁尝试在其自身的 'click' 监听器中处理 (通过 tryUnlockAudio)
       return;
     }
   }
 
-  console.log("mousePressed: 点击在画布上，继续进行绘制逻辑。");
-  playPenDownSound(); // 现在会在内部检查音频是否正在运行
+  if (getAudioContext().state !== 'running') {
+    userStartAudio();
+  }
+  playPenDownSound();
 
   isDrawing = true;
   currentPath = [{ x: mouseX, y: mouseY }];
@@ -328,24 +244,18 @@ function setupButtonListeners() {
 
   if (toggleBtnText) {
     toggleBtnText.addEventListener('click', (event) => {
-      console.log("模式切换按钮被点击。");
-      tryUnlockAudio(); // 尝试解锁音频上下文
       toggleMode();
       event.stopPropagation();
     });
   }
   if (clearBtnText) {
     clearBtnText.addEventListener('click', (event) => {
-      console.log("清除画布按钮被点击。");
-      tryUnlockAudio(); // 尝试解锁音频上下文
       clearDrawingAndShowMessage();
       event.stopPropagation();
     });
   }
   if (saveBtnText) {
     saveBtnText.addEventListener('click', (event) => {
-      console.log("保存画布按钮被点击。");
-      tryUnlockAudio(); // 尝试解锁音频上下文
       saveArtwork();
       event.stopPropagation();
     });
@@ -583,8 +493,7 @@ function initializeSoundEngine() {
 }
 
 function playPenDownSound() {
-  if (penDownSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
-    // console.log("playPenDownSound: 播放声音。");
+  if (penDownSoundEnv && getAudioContext().state === 'running') {
     penDownSoundOsc.freq(PEN_DOWN_BASE_FREQ + random(-PEN_DOWN_PITCH_RANDOM_RANGE, PEN_DOWN_PITCH_RANDOM_RANGE));
     penDownSoundEnv.setADSR(
       max(0.001, originalPenDownADSR.a + random(-0.005, 0.005)),
@@ -594,14 +503,11 @@ function playPenDownSound() {
     );
     penDownSoundEnv.setRange(PEN_DOWN_VOL_BASE + random(-PEN_DOWN_VOL_RANDOM_RANGE, PEN_DOWN_VOL_RANDOM_RANGE), 0);
     penDownSoundEnv.play();
-  } else {
-    console.log(`playPenDownSound: 跳过播放。AudioContext 状态: ${getAudioContext() ? getAudioContext().state : "N/A"}, 是否已解锁: ${audioContextSuccessfullyUnlocked}, penDownSoundEnv 是否存在: ${!!penDownSoundEnv}`);
   }
 }
 
 function playPenUpSound() {
-  if (penUpSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
-    // console.log("playPenUpSound: 播放声音。");
+  if (penUpSoundEnv && getAudioContext().state === 'running') {
     penUpSoundOsc.freq(PEN_UP_BASE_FREQ + random(-PEN_UP_PITCH_RANDOM_RANGE, PEN_UP_PITCH_RANDOM_RANGE));
     penUpSoundEnv.setADSR(
       max(0.001, originalPenUpADSR.a + random(-0.005, 0.005)),
@@ -611,14 +517,11 @@ function playPenUpSound() {
     );
     penUpSoundEnv.setRange(PEN_UP_VOL_BASE + random(-PEN_UP_VOL_RANDOM_RANGE, PEN_UP_VOL_RANDOM_RANGE), 0);
     penUpSoundEnv.play();
-  } else {
-     console.log(`playPenUpSound: 跳过播放。AudioContext 状态: ${getAudioContext() ? getAudioContext().state : "N/A"}, 是否已解锁: ${audioContextSuccessfullyUnlocked}, penUpSoundEnv 是否存在: ${!!penUpSoundEnv}`);
   }
 }
 
 function playCharPlacementSound(currentDrawingSpeed) {
-  if (charPlaceSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
-    // console.log("playCharPlacementSound: 播放声音。");
+  if (charPlaceSoundEnv && getAudioContext().state === 'running') {
     let randomOffset = random(-CHAR_PLACE_PITCH_RANDOM_RANGE, CHAR_PLACE_PITCH_RANDOM_RANGE);
     let cappedSpeed = min(currentDrawingSpeed, soundSpeedCapForCharSound);
     let pitchMultiplier = map(cappedSpeed, 0, soundSpeedCapForCharSound, CHAR_PLACE_PITCH_MULTIPLIER_MIN, CHAR_PLACE_PITCH_MULTIPLIER_MAX);
@@ -636,8 +539,6 @@ function playCharPlacementSound(currentDrawingSpeed) {
     }
     charPlaceSoundEnv.setRange(volume, 0);
     charPlaceSoundEnv.play();
-  } else {
-    console.log(`playCharPlacementSound: 跳过播放。AudioContext 状态: ${getAudioContext() ? getAudioContext().state : "N/A"}, 是否已解锁: ${audioContextSuccessfullyUnlocked}, charPlaceSoundEnv 是否存在: ${!!charPlaceSoundEnv}`);
   }
 }
 
@@ -686,7 +587,6 @@ function toggleMode() {
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
   activeFallingTextParticles = [];
   fallingCharIndex = 0;
-  console.log("模式切换。isShuffledMode:", isShuffledMode);
 }
 
 function clearDrawingInternal() {
@@ -701,7 +601,6 @@ function clearDrawingInternal() {
   activeFallingTextParticles = [];
   fallingCharIndex = 0;
   if (typeof background === 'function') background(250);
-  console.log("画布已清除。");
 }
 
 function clearDrawingAndShowMessage() {
@@ -710,7 +609,6 @@ function clearDrawingAndShowMessage() {
 
 function saveArtwork() {
   if (allPaths.length === 0 && currentPath.length < 2) {
-    console.log("保存作品：无内容可保存。");
     return;
   }
   const now = new Date();
@@ -721,7 +619,6 @@ function saveArtwork() {
   const timestamp = `${month}${day}-${hours}${minutes}`;
   const filename = `軌跡_${timestamp}.png`;
 
-  console.log("正在保存作品为:", filename);
   if (isShuffledMode) {
     let offscreenBuffer = createGraphics(width, height);
     offscreenBuffer.background(250);
