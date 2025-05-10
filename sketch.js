@@ -47,7 +47,7 @@ let lastMousePos = { x: 0, y: 0 };
 
 let minSpeed = 5; // 绘制速度影响文字间距的最小阈值
 let maxSpeed = 20; // 绘制速度影响文字间距的最大阈值
-let minSpacingAlongPath = 2; // 沿路径的最小文字间距
+let minSpacingAlongPath = 5; // 沿路径的最小文字间距
 let maxSpacingAlongPath = 40; // 沿路径的最大文字间距
 let textFontSize = 12; // 路径上文字的字体大小
 let textOffsetAboveLine = textFontSize * 0.8; // 文字相对于绘制线的垂直偏移量
