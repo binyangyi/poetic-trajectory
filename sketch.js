@@ -172,23 +172,6 @@ function windowResized() {
 // Event Handlers / 事件处理函数
 // ------------------------------------------------------------------------------------
 
-function initiateDrawingAndSound() {
-  if (typeof playPenDownSound === 'function') {
-    playPenDownSound();
-  }
-
-  isDrawing = true;
-  currentPath = [{ x: mouseX, y: mouseY }];
-  currentDrawnText = [];
-  lastMousePos = { x: mouseX, y: mouseY };
-  distSinceLastChar = 0;
-  lastPlacedTextPos = null;
-  
-  if (typeof advancePoemIndexPastPauses === 'function') {
-    advancePoemIndexPastPauses();
-  }
-}
-
 function mousePressed(event) {
   if (event && event.target) {
     const clickedElement = event.target;
@@ -196,25 +179,24 @@ function mousePressed(event) {
     const parentOfClickedElement = clickedElement.parentElement;
     const parentOfClickedElementId = parentOfClickedElement ? parentOfClickedElement.id : null;
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
-
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
-      if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running' && typeof userStartAudio === 'function') {
-         userStartAudio(document.documentElement);
-      }
       return;
     }
   }
 
-  if (typeof getAudioContext === 'function' && typeof userStartAudio === 'function') {
-    if (getAudioContext().state !== 'running') {
-      userStartAudio(document.documentElement, initiateDrawingAndSound);
-    } else {
-      initiateDrawingAndSound();
-    }
-  } else {
-    console.warn("p5.sound functions (getAudioContext or userStartAudio) not available.");
-    initiateDrawingAndSound(); 
+  if (getAudioContext().state !== 'running') {
+    userStartAudio();
   }
+  playPenDownSound();
+
+  isDrawing = true;
+  currentPath = [{ x: mouseX, y: mouseY }];
+  currentDrawnText = [];
+  lastMousePos = { x: mouseX, y: mouseY };
+  distSinceLastChar = 0;
+  lastPlacedTextPos = null;
+
+  advancePoemIndexPastPauses();
 }
 
 function mouseReleased() {
