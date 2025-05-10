@@ -173,17 +173,9 @@ function windowResized() {
 // ------------------------------------------------------------------------------------
 
 function mousePressed(event) {
-  // --- MODIFICATION START ---
-  // Attempt to start/resume the audio context on any mouse press if it's not already running.
-  // This is crucial for mobile browsers (especially iOS) which require a user gesture to enable audio.
-  // Call this at the beginning of the function to ensure it runs even if the click is on a UI button.
   if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
     userStartAudio();
   }
-  // --- MODIFICATION END ---
-
-  // Check if the click was on a UI button.
-  // If so, we've already attempted to start audio (above), so just return to avoid drawing.
   if (event && event.target) {
     const clickedElement = event.target;
     const clickedElementId = clickedElement.id;
@@ -192,11 +184,10 @@ function mousePressed(event) {
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
     
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
-      return; // Interaction was with a UI button, so don't proceed with drawing logic.
+      return;
     }
   }
 
-  // If the click was not on a UI button (i.e., it's on the canvas), proceed with drawing logic.
   playPenDownSound();
 
   isDrawing = true;
