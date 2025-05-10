@@ -179,24 +179,40 @@ function mousePressed(event) {
     const parentOfClickedElement = clickedElement.parentElement;
     const parentOfClickedElementId = parentOfClickedElement ? parentOfClickedElement.id : null;
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
+
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
+      if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
+        userStartAudio();
+      }
       return;
     }
   }
 
-  if (getAudioContext().state !== 'running') {
-    userStartAudio();
+  const initiateDrawing = () => {
+    if (typeof playPenDownSound === 'function') {
+        playPenDownSound();
+    }
+
+    isDrawing = true;
+    currentPath = [{ x: mouseX, y: mouseY }];
+    currentDrawnText = [];
+    lastMousePos = { x: mouseX, y: mouseY };
+    distSinceLastChar = 0;
+    lastPlacedTextPos = null;
+    
+    if (typeof advancePoemIndexPastPauses === 'function') {
+        advancePoemIndexPastPauses();
+    }
+  };
+
+  if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
+    if (typeof userStartAudio === 'function') {
+        userStartAudio();
+    }
+    setTimeout(initiateDrawing, 0); 
+  } else {
+    initiateDrawing();
   }
-  playPenDownSound();
-
-  isDrawing = true;
-  currentPath = [{ x: mouseX, y: mouseY }];
-  currentDrawnText = [];
-  lastMousePos = { x: mouseX, y: mouseY };
-  distSinceLastChar = 0;
-  lastPlacedTextPos = null;
-
-  advancePoemIndexPastPauses();
 }
 
 function mouseReleased() {
