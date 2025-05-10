@@ -172,6 +172,23 @@ function windowResized() {
 // Event Handlers / 事件处理函数
 // ------------------------------------------------------------------------------------
 
+function initiateDrawingAndSound() {
+  if (typeof playPenDownSound === 'function') {
+    playPenDownSound();
+  }
+
+  isDrawing = true;
+  currentPath = [{ x: mouseX, y: mouseY }];
+  currentDrawnText = [];
+  lastMousePos = { x: mouseX, y: mouseY };
+  distSinceLastChar = 0;
+  lastPlacedTextPos = null;
+  
+  if (typeof advancePoemIndexPastPauses === 'function') {
+    advancePoemIndexPastPauses();
+  }
+}
+
 function mousePressed(event) {
   if (event && event.target) {
     const clickedElement = event.target;
@@ -181,37 +198,22 @@ function mousePressed(event) {
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
 
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
-      if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
-        userStartAudio();
+      if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running' && typeof userStartAudio === 'function') {
+         userStartAudio(document.documentElement);
       }
       return;
     }
   }
 
-  const initiateDrawing = () => {
-    if (typeof playPenDownSound === 'function') {
-        playPenDownSound();
+  if (typeof getAudioContext === 'function' && typeof userStartAudio === 'function') {
+    if (getAudioContext().state !== 'running') {
+      userStartAudio(document.documentElement, initiateDrawingAndSound);
+    } else {
+      initiateDrawingAndSound();
     }
-
-    isDrawing = true;
-    currentPath = [{ x: mouseX, y: mouseY }];
-    currentDrawnText = [];
-    lastMousePos = { x: mouseX, y: mouseY };
-    distSinceLastChar = 0;
-    lastPlacedTextPos = null;
-    
-    if (typeof advancePoemIndexPastPauses === 'function') {
-        advancePoemIndexPastPauses();
-    }
-  };
-
-  if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
-    if (typeof userStartAudio === 'function') {
-        userStartAudio();
-    }
-    setTimeout(initiateDrawing, 0); 
   } else {
-    initiateDrawing();
+    console.warn("p5.sound functions (getAudioContext or userStartAudio) not available.");
+    initiateDrawingAndSound(); 
   }
 }
 
