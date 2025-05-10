@@ -45,9 +45,9 @@ let isDrawing = false;
 let distSinceLastChar = 0;
 let lastMousePos = { x: 0, y: 0 };
 
-let minSpeed = 0.5; // 绘制速度影响文字间距的最小阈值
-let maxSpeed = 20; // 绘制速度影响文字间距的最大阈值
-let minSpacingAlongPath = 3; // 沿路径的最小文字间距
+let minSpeed = 5; // 绘制速度影响文字间距的最小阈值
+let maxSpeed = 8; // 绘制速度影响文字间距的最大阈值
+let minSpacingAlongPath = 1; // 沿路径的最小文字间距
 let maxSpacingAlongPath = 40; // 沿路径的最大文字间距
 let textFontSize = 12; // 路径上文字的字体大小
 let textOffsetAboveLine = textFontSize * 0.8; // 文字相对于绘制线的垂直偏移量
@@ -56,7 +56,7 @@ let lineAlpha = 200; // 绘制线的透明度 (0-255)
 let textAlpha = 255; // 路径上文字的透明度 (0-255)
 let lineStrokeColor = 0; // 绘制线的颜色 (0为黑, 255为白, 或 color(r,g,b))
 let minScreenSpacing = textFontSize * 0.7; // 防止文字在屏幕上过于重叠的最小间距
-let pauseLengthOnPath = 60; // 诗句之间停顿的等效路径长度
+let pauseLengthOnPath = 105; // 诗句之间停顿的等效路径长度
 
 const PAUSE_MARKER = { isPause: true, length: pauseLengthOnPath };
 
