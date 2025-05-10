@@ -173,20 +173,30 @@ function windowResized() {
 // ------------------------------------------------------------------------------------
 
 function mousePressed(event) {
+  // --- MODIFICATION START ---
+  // Attempt to start/resume the audio context on any mouse press if it's not already running.
+  // This is crucial for mobile browsers (especially iOS) which require a user gesture to enable audio.
+  // Call this at the beginning of the function to ensure it runs even if the click is on a UI button.
+  if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
+    userStartAudio();
+  }
+  // --- MODIFICATION END ---
+
+  // Check if the click was on a UI button.
+  // If so, we've already attempted to start audio (above), so just return to avoid drawing.
   if (event && event.target) {
     const clickedElement = event.target;
     const clickedElementId = clickedElement.id;
     const parentOfClickedElement = clickedElement.parentElement;
     const parentOfClickedElementId = parentOfClickedElement ? parentOfClickedElement.id : null;
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
+    
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
-      return;
+      return; // Interaction was with a UI button, so don't proceed with drawing logic.
     }
   }
 
-  if (getAudioContext().state !== 'running') {
-    userStartAudio();
-  }
+  // If the click was not on a UI button (i.e., it's on the canvas), proceed with drawing logic.
   playPenDownSound();
 
   isDrawing = true;
@@ -493,7 +503,7 @@ function initializeSoundEngine() {
 }
 
 function playPenDownSound() {
-  if (penDownSoundEnv && getAudioContext().state === 'running') {
+  if (penDownSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
     penDownSoundOsc.freq(PEN_DOWN_BASE_FREQ + random(-PEN_DOWN_PITCH_RANDOM_RANGE, PEN_DOWN_PITCH_RANDOM_RANGE));
     penDownSoundEnv.setADSR(
       max(0.001, originalPenDownADSR.a + random(-0.005, 0.005)),
@@ -507,7 +517,7 @@ function playPenDownSound() {
 }
 
 function playPenUpSound() {
-  if (penUpSoundEnv && getAudioContext().state === 'running') {
+  if (penUpSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
     penUpSoundOsc.freq(PEN_UP_BASE_FREQ + random(-PEN_UP_PITCH_RANDOM_RANGE, PEN_UP_PITCH_RANDOM_RANGE));
     penUpSoundEnv.setADSR(
       max(0.001, originalPenUpADSR.a + random(-0.005, 0.005)),
@@ -521,7 +531,7 @@ function playPenUpSound() {
 }
 
 function playCharPlacementSound(currentDrawingSpeed) {
-  if (charPlaceSoundEnv && getAudioContext().state === 'running') {
+  if (charPlaceSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
     let randomOffset = random(-CHAR_PLACE_PITCH_RANDOM_RANGE, CHAR_PLACE_PITCH_RANDOM_RANGE);
     let cappedSpeed = min(currentDrawingSpeed, soundSpeedCapForCharSound);
     let pitchMultiplier = map(cappedSpeed, 0, soundSpeedCapForCharSound, CHAR_PLACE_PITCH_MULTIPLIER_MIN, CHAR_PLACE_PITCH_MULTIPLIER_MAX);
