@@ -133,10 +133,11 @@ function setup() {
   prepareFallingTextSource();
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
   initializeSoundEngine();
-  setupButtonListeners();
+  setupButtonListeners(); // This will now include audio start attempts
 
   lastPlacedTextPos = null;
   activeFallingTextParticles = [];
+  console.log("Setup complete. Audio context state:", getAudioContext() ? getAudioContext().state : "Not available");
 }
 
 function draw() {
@@ -172,10 +173,21 @@ function windowResized() {
 // Event Handlers / 事件处理函数
 // ------------------------------------------------------------------------------------
 
-function mousePressed(event) {
+// Helper function to be called on any user interaction to start audio
+function tryStartAudioContext() {
   if (typeof getAudioContext === 'function' && getAudioContext().state !== 'running') {
-    userStartAudio();
+    console.log(`Attempting to start audio via user gesture. Current state: ${getAudioContext().state}`);
+    userStartAudio(); // This is p5's function to start the audio context
+    // Log state shortly after to see if it changed
+    // setTimeout(() => {
+    //   console.log(`AudioContext state after userStartAudio attempt: ${getAudioContext().state}`);
+    // }, 100);
   }
+}
+
+function mousePressed(event) {
+  tryStartAudioContext(); // Attempt to start audio on canvas press/touch
+
   if (event && event.target) {
     const clickedElement = event.target;
     const clickedElementId = clickedElement.id;
@@ -184,10 +196,16 @@ function mousePressed(event) {
     const buttonIds = ['toggleModeTextBtnBackground', 'clearCanvasTextBtnBackground', 'saveCanvasBtnBackground'];
     
     if (buttonIds.includes(clickedElementId) || (parentOfClickedElementId && buttonIds.includes(parentOfClickedElementId))) {
+      // This click was on one of the HTML buttons.
+      // Audio start attempt for buttons is handled in their own 'click' listeners.
+      // So, we just return to prevent drawing on the canvas.
+      console.log("mousePressed: Click on HTML button, returning.");
       return;
     }
   }
 
+  // If the click was on the canvas (not an HTML button)
+  console.log("mousePressed: Click on canvas, proceeding with drawing.");
   playPenDownSound();
 
   isDrawing = true;
@@ -245,18 +263,24 @@ function setupButtonListeners() {
 
   if (toggleBtnText) {
     toggleBtnText.addEventListener('click', (event) => {
+      console.log("Toggle Mode button clicked.");
+      tryStartAudioContext(); // <--- CRUCIAL FOR BUTTON INTERACTIONS
       toggleMode();
       event.stopPropagation();
     });
   }
   if (clearBtnText) {
     clearBtnText.addEventListener('click', (event) => {
+      console.log("Clear Canvas button clicked.");
+      tryStartAudioContext(); // <--- CRUCIAL FOR BUTTON INTERACTIONS
       clearDrawingAndShowMessage();
       event.stopPropagation();
     });
   }
   if (saveBtnText) {
     saveBtnText.addEventListener('click', (event) => {
+      console.log("Save Canvas button clicked.");
+      tryStartAudioContext(); // <--- CRUCIAL FOR BUTTON INTERACTIONS
       saveArtwork();
       event.stopPropagation();
     });
@@ -495,6 +519,7 @@ function initializeSoundEngine() {
 
 function playPenDownSound() {
   if (penDownSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
+    // console.log("playPenDownSound: Playing sound.");
     penDownSoundOsc.freq(PEN_DOWN_BASE_FREQ + random(-PEN_DOWN_PITCH_RANDOM_RANGE, PEN_DOWN_PITCH_RANDOM_RANGE));
     penDownSoundEnv.setADSR(
       max(0.001, originalPenDownADSR.a + random(-0.005, 0.005)),
@@ -504,11 +529,14 @@ function playPenDownSound() {
     );
     penDownSoundEnv.setRange(PEN_DOWN_VOL_BASE + random(-PEN_DOWN_VOL_RANDOM_RANGE, PEN_DOWN_VOL_RANDOM_RANGE), 0);
     penDownSoundEnv.play();
+  } else {
+    console.log(`playPenDownSound: Skipped. AudioContext state: ${getAudioContext() ? getAudioContext().state : "N/A"}, penDownSoundEnv: ${!!penDownSoundEnv}`);
   }
 }
 
 function playPenUpSound() {
   if (penUpSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
+    // console.log("playPenUpSound: Playing sound.");
     penUpSoundOsc.freq(PEN_UP_BASE_FREQ + random(-PEN_UP_PITCH_RANDOM_RANGE, PEN_UP_PITCH_RANDOM_RANGE));
     penUpSoundEnv.setADSR(
       max(0.001, originalPenUpADSR.a + random(-0.005, 0.005)),
@@ -518,11 +546,14 @@ function playPenUpSound() {
     );
     penUpSoundEnv.setRange(PEN_UP_VOL_BASE + random(-PEN_UP_VOL_RANDOM_RANGE, PEN_UP_VOL_RANDOM_RANGE), 0);
     penUpSoundEnv.play();
+  } else {
+     console.log(`playPenUpSound: Skipped. AudioContext state: ${getAudioContext() ? getAudioContext().state : "N/A"}, penUpSoundEnv: ${!!penUpSoundEnv}`);
   }
 }
 
 function playCharPlacementSound(currentDrawingSpeed) {
   if (charPlaceSoundEnv && typeof getAudioContext === 'function' && getAudioContext().state === 'running') {
+    // console.log("playCharPlacementSound: Playing sound.");
     let randomOffset = random(-CHAR_PLACE_PITCH_RANDOM_RANGE, CHAR_PLACE_PITCH_RANDOM_RANGE);
     let cappedSpeed = min(currentDrawingSpeed, soundSpeedCapForCharSound);
     let pitchMultiplier = map(cappedSpeed, 0, soundSpeedCapForCharSound, CHAR_PLACE_PITCH_MULTIPLIER_MIN, CHAR_PLACE_PITCH_MULTIPLIER_MAX);
@@ -540,6 +571,8 @@ function playCharPlacementSound(currentDrawingSpeed) {
     }
     charPlaceSoundEnv.setRange(volume, 0);
     charPlaceSoundEnv.play();
+  } else {
+    console.log(`playCharPlacementSound: Skipped. AudioContext state: ${getAudioContext() ? getAudioContext().state : "N/A"}, charPlaceSoundEnv: ${!!charPlaceSoundEnv}`);
   }
 }
 
@@ -588,6 +621,7 @@ function toggleMode() {
   loadPoemData(isShuffledMode ? poemLinesShuffled : poemLinesNormal);
   activeFallingTextParticles = [];
   fallingCharIndex = 0;
+  console.log("Mode toggled. isShuffledMode:", isShuffledMode);
 }
 
 function clearDrawingInternal() {
@@ -602,6 +636,7 @@ function clearDrawingInternal() {
   activeFallingTextParticles = [];
   fallingCharIndex = 0;
   if (typeof background === 'function') background(250);
+  console.log("Canvas cleared.");
 }
 
 function clearDrawingAndShowMessage() {
@@ -610,6 +645,7 @@ function clearDrawingAndShowMessage() {
 
 function saveArtwork() {
   if (allPaths.length === 0 && currentPath.length < 2) {
+    console.log("Save artwork: Nothing to save.");
     return;
   }
   const now = new Date();
@@ -620,6 +656,7 @@ function saveArtwork() {
   const timestamp = `${month}${day}-${hours}${minutes}`;
   const filename = `軌跡_${timestamp}.png`;
 
+  console.log("Saving artwork as:", filename);
   if (isShuffledMode) {
     let offscreenBuffer = createGraphics(width, height);
     offscreenBuffer.background(250);
