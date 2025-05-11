@@ -2,9 +2,9 @@
 // Adjustable Global Variables / 可调节的全局变量
 // ------------------------------------------------------------------------------------
 
-let minSpeed = 5;                         // 绘制时影响文字间距的最小速度阈值
+let minSpeed = 1;                         // 绘制时影响文字间距的最小速度阈值
 let maxSpeed = 20;                        // 绘制时影响文字间距的最大速度阈值
-let minSpacingAlongPath = 8;              // 路径上文字的最小间距
+let minSpacingAlongPath = 10;             // 路径上文字的最小间距
 let maxSpacingAlongPath = 40;             // 路径上文字的最大间距
 let textFontSize = 12;                    // 文本字体大小
 let strokeLineWeight = 1.2;               // 绘制线条的粗细
