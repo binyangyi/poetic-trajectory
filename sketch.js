@@ -2,9 +2,9 @@
 // Adjustable Global Variables / 可调节的全局变量
 // ------------------------------------------------------------------------------------
 
-let minSpeed = 1;                         // 绘制时影响文字间距的最小速度阈值
+let minSpeed = 5;                         // 绘制时影响文字间距的最小速度阈值
 let maxSpeed = 20;                        // 绘制时影响文字间距的最大速度阈值
-let minSpacingAlongPath = 10;             // 路径上文字的最小间距
+let minSpacingAlongPath = 8;              // 路径上文字的最小间距
 let maxSpacingAlongPath = 40;             // 路径上文字的最大间距
 let textFontSize = 12;                    // 文本字体大小
 let strokeLineWeight = 1.2;               // 绘制线条的粗细
@@ -18,7 +18,7 @@ const fallingTextInitialLifespan = 120;   // “混成”模式下，文字颗�
 const fallingTextGravity = 0.07;          // “混成”模式下，文字颗粒的重力加速度
 let soundSpeedCapForCharSound = 22;       // 字符放置音效，速度映射到音高的上限值
 let textOffsetAboveLine;                  // 文字中心相对绘制线条的垂直偏移量
-let minScreenSpacing;                     // 文字之间的最小屏幕显示间距，防止重叠
+let minScreenSpacing = 5;                 // 文字之间的最小屏幕显示间距，防止重叠
 let fallingTextFontSize;                  // “混成”模式下，飘落文字的字体大小
 
 // ------------------------------------------------------------------------------------
